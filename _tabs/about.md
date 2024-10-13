@@ -8,7 +8,7 @@ title: About
 # MIT License
 ---
 
-<img style="float: right;" src="https://github.com/msaraya.png?size=200">
+<img style="float: right;" src="https://github.com/msaraya.png?size=200" alt="Profile image of msaraya">
 
 I am a **Site Reliability Engineer (SRE)** with a strong focus on infrastructure, platforms, Linux, open-source software, DevOps practices, distributed computing, (Kubernetes) containerization, and cloud technologies.
 
