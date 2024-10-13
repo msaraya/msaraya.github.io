@@ -18,7 +18,7 @@ title: Mohamed Saraya # the main title
 
 tagline: Site Reliability Engineer (SRE) # it will display as the subtitle
 
-description: >-                        # used by seo meta and the atom feed
+description: >- # used by seo meta and the atom feed
   Blog and portfolio focused on
   Linux, Kubernetes, containers, DevOps,
   cloud, and other technical things.
@@ -154,7 +154,7 @@ pwa:
 paginate: 10
 
 # The base URL of your site
-baseurl: "https://blog.msaraya.com"
+baseurl: ""
 
 # ------------ The following options are not recommended to be modified ------------------
 
