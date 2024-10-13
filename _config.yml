@@ -154,7 +154,7 @@ pwa:
 paginate: 10
 
 # The base URL of your site
-baseurl: "https://www.msaraya.com"
+baseurl: "https://blog.msaraya.com"
 
 # ------------ The following options are not recommended to be modified ------------------
 
