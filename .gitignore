@@ -25,3 +25,13 @@ package-lock.json
 # Misc
 _sass/dist
 assets/js/dist
+
+# Local secrets and credentials
+.env
+.env.*
+!.env.example
+!**/.env.example
+*.pem
+*.key
+*.p12
+*.pfx
