@@ -68,3 +68,23 @@ assert.equal(calc.installmentCount,8);
 assert.ok(calc.occupancy>0);
 assert.ok(calc.refundLow<=calc.refundHigh);
 console.log('Unit catalogue, FX payment audit and multi-year exit tests passed');
+
+// All-unit reverse-ledger regressions (2026-10-17 update).
+const {ledgerUsdScenarios}=require('./logic.js');
+const modeled=UNITS.map(u=>({unit:u,audit:ledgerUsdScenarios(u)}));
+assert.equal(modeled.filter(x=>x.audit.available).length,61);
+assert.equal(modeled.filter(x=>!x.audit.available).map(x=>x.unit.code).join(','),'MLC41M19');
+for(const {unit,audit} of modeled.filter(x=>x.audit.available)){
+ assert.ok([1,2,3,4].includes(unit.alt));
+ assert.ok(Number.isFinite(audit.usdAtDec)&&audit.usdAtDec>0);
+ assert.ok(Number.isFinite(audit.usdAtLater)&&audit.usdAtLater>0);
+ assert.ok(audit.usdAtDec>audit.usdAtLater);
+ assert.ok(Math.abs(audit.targetEGP-audit.creditedEGP-unit.officialOutstandingEGP)<.01);
+ const deferred=ledgerUsdScenarios(unit,{discountTiming:'deferred'});
+ assert.ok(deferred.available);
+ assert.ok(deferred.usdAtDec>=audit.usdAtDec-.01);
+}
+const emadLedger=ledgerUsdScenarios(emad);
+assert.ok(Math.abs(emadLedger.usdAtDec-25007.50219908408)<.01);
+assert.ok(Math.abs(ledgerUsdScenarios(emad,{discountTiming:'deferred'}).creditedEGP - emadLedger.creditedEGP - emad.price*.03)<.01);
+console.log('61 unit FX models (all four choices) validated; missing 62nd ledger stays unknown');

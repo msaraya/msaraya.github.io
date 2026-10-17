@@ -157,6 +157,43 @@
       remainingPrincipal,excessDeductions,lossLow:Math.max(0,cashPaid-refundHigh),
       lossHigh:Math.max(0,cashPaid-refundLow),noticeDeadline:p.noticeDate?addMonths(p.noticeDate,1):null};
   }
+  // Reverse-ledger scenario for every recorded alternative. It is a model of EGP credit,
+  // NOT proof of either the amount sent in USD or the exchange rate applied by NUCA.
+  // The discount is assumed to reduce the pre-handover balance in full. Specific
+  // allocations may differ in the authority's statement.
+  const LEDGER_OBLIGATIONS = Object.freeze({
+    1: {fraction:1.065, label:'100% الثمن + 12% صيانة + 1.5% رسوم − 7% خصم'},
+    2: {fraction:.585, label:'50% مقدم + 12% صيانة + 1.5% رسوم − 5% خصم'},
+    3: {fraction:.405, label:'30% مقدم + 12% صيانة + 1.5% رسوم − 3% خصم'},
+    4: {fraction:.385, label:'15% مقدم + 10% استلام + 12% صيانة + 1.5% رسوم'}
+  });
+  function ledgerUsdScenarios(unit, params={}) {
+    if (!unit || !Number.isFinite(unit.officialOutstandingEGP) || !LEDGER_OBLIGATIONS[Number(unit.alt)]) {
+      return { available:false, code:unit?.code||'', reason:'لا يوجد رصيد وبديل مسجلان لهذه الوحدة' };
+    }
+    const ref=LEDGER_OBLIGATIONS[Number(unit.alt)];
+    const bookedUSD=nonnegative(params.bookingUSD ?? 5000);
+    const bookFX=nonnegative(params.bookingFX ?? 47.5019);
+    const fxDec=nonnegative(params.fxDec ?? 47.4061);
+    const fxLater=nonnegative(params.fxLater ?? 53.4134);
+    const deferredDiscount = params.discountTiming==='deferred';
+    const discountRate={1:.07,2:.05,3:.03,4:0}[Number(unit.alt)];
+    const fraction=ref.fraction+(deferredDiscount?discountRate:0);
+    const targetEGP=unit.price*fraction;
+    const creditedEGP=targetEGP-unit.officialOutstandingEGP;
+    const bookedEGP=bookedUSD*bookFX;
+    const subsequentEGP=creditedEGP-bookedEGP;
+    const valid=creditedEGP>=0 && subsequentEGP>=-0.01 && fxDec>0 && fxLater>0 && bookFX>0;
+    return { available:valid, code:unit.code, alt:Number(unit.alt), fraction, description:ref.label+(deferredDiscount?' (خصم مؤجل افتراضيًا)':''),
+      bookedUSD, bookFX, fxDec, fxLater, targetEGP, creditedEGP, bookedEGP, subsequentEGP,
+      usdAtDec: valid ? bookedUSD+subsequentEGP/fxDec : null,
+      usdAtLater: valid ? bookedUSD+subsequentEGP/fxLater : null,
+      subsequentUSDDec:valid ? subsequentEGP/fxDec : null,
+      subsequentUSDLater:valid ? subsequentEGP/fxLater : null,
+      // This is a currency-scenario spread, not evidence of overpayment.
+      scenarioSpreadUSD:valid ? subsequentEGP/fxDec-subsequentEGP/fxLater : null,
+      reason:valid ? '' : 'المعادلة لا تسمح بالتقدير بالقيم الحالية؛ تحقق من الرصيد/سعر الصرف' };
+  }
   // Audit crosswalk: a displayed outstanding balance is NOT itself evidence of how much USD was sent.
   // For D2/R3 alternatives 3 and 4 only, infer credited EGP using a *stated*, adjustable
   // financial-obligations hypothesis and the ledger balance. The 3% discount for
@@ -164,9 +201,7 @@
   function paymentAudit(unit, referenceFx, override = null) {
     const hasLedger = Number.isFinite(unit?.officialOutstandingEGP);
     const alt = Number(unit?.alt);
-    const obligationsFraction = alt === 3 ? .30 + .12 + .015 - .03
-                              : alt === 4 ? .15 + .10 + .12 + .015
-                              : null;
+    const obligationsFraction = LEDGER_OBLIGATIONS[alt]?.fraction ?? null;
     const rate = Math.max(.01, nonnegative(referenceFx) || 53.4134);
     const known = Array.isArray(unit?.payments) && unit.payments.length > 0;
     const paid = known ? unit.payments.reduce((s,p)=>s+nonnegative(p.postedUSD??p.usd),0) : 0;
@@ -194,5 +229,5 @@
       appliedEGP,paidUSD,appliedFx,targetEGP,impliedCreditedEGP,impliedUSDAtReference,
       differenceEGP,differenceUSD,userAmounts};
   }
-  return {ALTERNATIVES, calculate, compare, exitEstimate, exitProjection, paymentAudit, addMonths, safeDate, formatMoney, clamp, nonnegative};
+  return {ALTERNATIVES, calculate, compare, exitEstimate, exitProjection, paymentAudit, ledgerUsdScenarios, LEDGER_OBLIGATIONS, addMonths, safeDate, formatMoney, clamp, nonnegative};
 });

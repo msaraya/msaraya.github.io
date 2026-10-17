@@ -4,11 +4,11 @@
  const $=(id)=>document.getElementById(id);
  const num=(v)=>L.nonnegative(v), fmt=(v,dec=0)=>L.formatMoney(Number.isFinite(v)?v:0,dec);
  const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
- const MAIN_IDS=['price','unitType','deliveryDate','spotFX','paidUSD','historicalFX','paidEGP','paidFeesEGP','budgetBooking','budgetDelivery','budgetQuarter','extraAnnualPercent','extraMode','studyFeeUSD','noticeDate','actualHandoverDate','unitCode','exitYears','paymentReferenceFX'];
- const inputDefault = {price:8439000,unitType:'commercial',deliveryDate:'2026-11-01',spotFX:52,paidUSD:0,historicalFX:53.4134,paidEGP:0,paidFeesEGP:0,budgetBooking:0,budgetDelivery:0,budgetQuarter:0,extraAnnualPercent:2.5,extraMode:'balance-annual',studyFeeUSD:50,noticeDate:'',actualHandoverDate:'',unitCode:'',exitYears:'1'};
+ const MAIN_IDS=['price','unitType','deliveryDate','spotFX','paidUSD','historicalFX','paidEGP','paidFeesEGP','budgetBooking','budgetDelivery','budgetQuarter','extraAnnualPercent','extraMode','studyFeeUSD','noticeDate','actualHandoverDate','unitCode','exitYears','paymentReferenceFX','fxBooking','fxDecember','bookingUSD','discountTiming'];
+ const inputDefault = {price:8439000,unitType:'commercial',deliveryDate:'2026-11-01',spotFX:52,paidUSD:0,historicalFX:53.4134,paidEGP:0,paidFeesEGP:0,budgetBooking:0,budgetDelivery:0,budgetQuarter:0,extraAnnualPercent:2.5,extraMode:'balance-annual',studyFeeUSD:50,noticeDate:'',actualHandoverDate:'',unitCode:'',exitYears:'1',fxBooking:47.5019,fxDecember:47.4061,bookingUSD:5000,discountTiming:'upfront'};
  let years={}, rates={}, fx={}, selected='a4-5', exitMode='after';
  let lastComparison=null;
- const STORAGE_KEY='molak-al-mamsha-calculator-v4';
+ const STORAGE_KEY='molak-al-mamsha-calculator-v4-fx61';
  function defaultAnnual(year){const k=Math.max(0,year-new Date().getFullYear());return {rate:Math.max(9, 20-2.0*k),fx:52};}
  function load(){try{const data=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');if(data&&typeof data==='object'){
   for(const key of MAIN_IDS)if(data.fields&&Object.prototype.hasOwnProperty.call(data.fields,key))$(key).value=data.fields[key];
@@ -44,12 +44,17 @@
    }select.append(group);
   }
  }
+ function ledgerParams(){return {bookingUSD:num($('bookingUSD').value),bookingFX:num($('fxBooking').value),fxDec:num($('fxDecember').value),fxLater:num($('paymentReferenceFX').value),discountTiming:$('discountTiming').value};}
  function renderUnitsList(){
   const q=($('unitSearch').value||'').trim().toUpperCase();const building=$('buildingFilter').value,kind=$('typeFilter').value;
   const filtered=UNITS.filter(u=>(!q||u.code.toUpperCase().includes(q))&&(!building||u.building===building)&&(!kind||u.type===kind));
-  $('unitCount').textContent=`${fmt(filtered.length)} وحدة ظاهرة من أصل ${fmt(UNITS.length)} وحدة`;
+  $('unitCount').textContent=`${fmt(filtered.length)} وحدة ظاهرة من أصل ${fmt(UNITS.length)} وحدة · ${fmt(UNITS.filter(x=>L.ledgerUsdScenarios(x,ledgerParams()).available).length)} وحدة لها حساب الدولار السيناريوي`;
   const frag=document.createDocumentFragment();
-  for(const u of filtered){const tr=document.createElement('tr');tr.innerHTML=`<td dir="ltr"><b>${u.code}</b></td><td>${u.type}</td><td>${fmt(u.area)}</td><td>${fmt(u.price)}</td><td>${u.alt?'البديل '+fmt(u.alt):'غير معروف'}</td><td>${Number.isFinite(u.officialOutstandingEGP)?fmt(u.officialOutstandingEGP,2):'غير متاح'}</td><td><button class="soft small open-unit" data-code="${u.code}" type="button">اختيار</button></td>`;frag.append(tr);}
+  const fxParams=ledgerParams();
+  for(const u of filtered){const tr=document.createElement('tr'), model=L.ledgerUsdScenarios(u,fxParams);
+   const atDec=model.available?fmt(model.usdAtDec,2)+' $':'—';
+   const atLater=model.available?fmt(model.usdAtLater,2)+' $':'—';
+   tr.innerHTML=`<td dir="ltr"><b>${u.code}</b></td><td>${u.type}</td><td>${fmt(u.area)}</td><td>${fmt(u.price)}</td><td>${u.alt?'البديل '+fmt(u.alt):'غير معروف'}</td><td>${Number.isFinite(u.officialOutstandingEGP)?fmt(u.officialOutstandingEGP,2):'غير متاح'}</td><td class="scenario-amount" dir="ltr">${atDec}</td><td class="scenario-amount" dir="ltr">${atLater}</td><td><button class="soft small open-unit" data-code="${u.code}" type="button">اختيار</button></td>`;frag.append(tr);}
   $('unitsBody').replaceChildren(frag);
  }
  function renderPayments(p){
@@ -58,8 +63,23 @@
    const fxRef=num($('paymentReferenceFX').value)||53.4134;
    const manualHasAmounts=num(p.paidUSD)>0||num(p.paidEGP)>0||num(p.paidFeesEGP)>0;
    const a=L.paymentAudit(u,fxRef,{hasAmounts:manualHasAmounts,principalUSD:p.paidUSD,historicalFX:p.historicalFX,paidEGP:p.paidEGP,paidFeesEGP:p.paidFeesEGP});
+   const scenario=L.ledgerUsdScenarios(u,ledgerParams());
+   const ds=$('paymentScenarioDetail');
+   if(scenario.available){
+     ds.innerHTML=`<div class="scenario-breakdown"><h3>سيناريو الدولار لهذه الوحدة</h3><div class="table-wrap"><table><thead><tr><th>البند</th><th>القيمة</th></tr></thead><tbody>
+       <tr><td>نسبة الالتزامات الافتراضية للبديل ${u.alt}</td><td>${fmt(scenario.fraction*100,1)}٪</td></tr>
+       <tr><td>إجمالي الالتزامات المفترضة حتى الاستلام</td><td>${fmt(scenario.targetEGP,2)} ج.م</td></tr>
+       <tr><td>المقيّد حسابيًا بالجنيه = الالتزامات − رصيد الكشف</td><td>${fmt(scenario.creditedEGP,2)} ج.م</td></tr>
+       <tr><td>جدية الحجز المفترضة</td><td>${fmt(scenario.bookedUSD,2)} $ × ${fmt(scenario.bookFX,4)} = ${fmt(scenario.bookedEGP,2)} ج.م</td></tr>
+       <tr><td>المقيّد بعد جدية الحجز</td><td>${fmt(scenario.subsequentEGP,2)} ج.م</td></tr>
+       <tr><td>إجمالي دولار مفترض · سعر ٢٢ ديسمبر</td><td class="highlight-cell">${fmt(scenario.usdAtDec,2)} $</td></tr>
+       <tr><td>إجمالي دولار مفترض · السعر المرجعي الثاني (${fmt(scenario.fxLater,4)})</td><td class="highlight-cell">${fmt(scenario.usdAtLater,2)} $</td></tr>
+       <tr><td>فرق السيناريوهين بالدولار (ليس زيادة مثبتة)</td><td>${fmt(Math.abs(scenario.scenarioSpreadUSD),2)} $</td></tr>
+       </tbody></table></div><p class="fine">${scenario.description}. نفس رصيد الهيئة قد يقابله أكثر من عدد دولارات حسب سعر الصرف وتوقيت التحويل وتخصيصه بين أصل الثمن والرسوم.</p></div>`;
+   } else {ds.innerHTML='<div class="muted-note">هذه الوحدة ليس لها رصيد وبديل كاملان بالكشف المالي؛ لا يمكن استنتاج الدولار دون إدخال بيانات إضافية.</div>';}
+
    s.innerHTML=`<h3>${u.code} · ${u.type} · ${fmt(u.area)} م²</h3><p class="muted-note">السعر: <b>${fmt(u.price)}</b> جنيه · البديل المسجل: <b>${u.alt||'غير متاح'}</b> · رصيد كشف المديونيات: <b>${Number.isFinite(u.officialOutstandingEGP)?fmt(u.officialOutstandingEGP,2)+' جنيه':'غير متاح'}</b>. الرصيد ليس مُحدَّثًا تلقائيًا.</p>`;
-   const metrics=[['الالتزامات المعيارية بالفرضية',a.targetEGP===null?'غير محسوبة':fmt(a.targetEGP)+' ج.م'],['المقيد تقديريًا بحسب كشف الرصيد',a.impliedCreditedEGP===null?'لا توجد معادلة معتمدة':fmt(a.impliedCreditedEGP,2)+' ج.م'],['دولارات مستنتجة عند السعر المرجعي',a.impliedUSDAtReference===null?'غير متاح':fmt(a.impliedUSDAtReference,2)+' $'],['إجمالي الدولار المُبلّغ بتحويله',a.known?fmt(a.sentUSD,2)+' $':manualHasAmounts?fmt(num(p.paidUSD))+' $ (مدخل يدوي)':'غير موثق']];
+   const metrics=[['الالتزامات المعيارية بالفرضية',a.targetEGP===null?'غير محسوبة':fmt(a.targetEGP)+' ج.م'],['المقيد تقديريًا بحسب كشف الرصيد',a.impliedCreditedEGP===null?'غير متاح':fmt(a.impliedCreditedEGP,2)+' ج.م'],['الدولار في سيناريو ٢٢ ديسمبر',scenario.available?fmt(scenario.usdAtDec,2)+' $':'غير متاح'],['الدولار في السيناريو الثاني',scenario.available?fmt(scenario.usdAtLater,2)+' $':'غير متاح']];
    m.innerHTML=metrics.map(([k,val])=>`<div class="mini-metric"><label>${k}</label><b>${val}</b></div>`).join('');
    if(a.known){
      const sentLines=u.payments.map(x=>`<tr><td>${x.date||'تاريخ غير مثبت'}</td><td>${fmt(x.usd,2)} $</td><td>${fmt(x.fx,4)}</td><td>${fmt(x.usd*x.fx,2)} ج.م</td><td>${x.source||'إفادة'}</td></tr>`).join('');
@@ -166,7 +186,7 @@
       <div class="exit-alert">⚠ «العبء غير المسترد» يضم فوائد ورسومًا ومصاريف دراسة ووديعة صيانة مدفوعة يفترض عدم ردها في الحساب المحافظ؛ <b>مصير وديعة الصيانة وتصفية التمويل المتبقي والغرامات غير محسوم</b> ويحتاج كشف تسوية من الجهاز. مقابل الإشغال ٧٪ من إجمالي قيمة الوحدة عن كل سنة وفق الكراسة، وليس فائدة بنكية.</div>`;
   }
  }
- function calculateAll(){const p=val();lastComparison=L.compare(p);renderRecommendation(lastComparison);renderCompare(lastComparison);renderSchedule(lastComparison);renderExit(p);renderUnitSummary();renderPayments(p);persist();}
+ function calculateAll(){const p=val();lastComparison=L.compare(p);renderRecommendation(lastComparison);renderCompare(lastComparison);renderSchedule(lastComparison);renderExit(p);renderUnitSummary();renderPayments(p);renderUnitsList();persist();}
  function csvCell(v){const s=String(v??'');return '"'+s.replaceAll('"','""')+'"';}
  function csvDownload(rows,file){const csv='\ufeff'+rows.map(r=>r.map(csvCell).join(',')).join('\r\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=file;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);}
  function exportCompare(){if(!lastComparison)return;const headers=['البديل','رسمي','الخصم %','الآن جنيه','الاستلام جنيه','أكبر قسط جنيه','فائدة جنيه','إضافات جنيه','إجمالي جنيه','توفير مقابل الرابع ١٠ سنوات'];csvDownload([headers,...lastComparison.results.map(r=>[r.title,r.official?'نعم':'لا',r.discount*100,r.bookingDue,r.handoverDue,r.maxQuarter,r.totalInterest,r.totalSurcharge,r.totalEGP,lastComparison.baseline.totalEGP-r.totalEGP])],'molak-al-mamsha-comparison.csv');}
@@ -174,10 +194,16 @@
  function attach(){for(const k of MAIN_IDS.filter(k=>k!=='unitCode')){$(k).addEventListener('input',()=>{if(k==='deliveryDate'){buildYears();}calculateAll();});$(k).addEventListener('change',()=>{if(k==='deliveryDate')buildYears();calculateAll();});}
  $('unitCode').addEventListener('change',()=>selectUnit($('unitCode').value,true));
  for(const id of ['unitSearch','buildingFilter','typeFilter'])$(id).addEventListener('input',renderUnitsList);
- $('paymentReferenceFX').addEventListener('input',calculateAll);
  $('unitsBody').addEventListener('click',(event)=>{const button=event.target.closest('button[data-code]');if(!button)return;
     $('unitCode').value=button.dataset.code;selectUnit(button.dataset.code,true);$('calculator').scrollIntoView({behavior:'smooth',block:'start'});});
  $('exportUnits').addEventListener('click',()=>csvDownload([['كود','عمارة','نوع','مساحة م²','سعر جنيه','بديل','رصيد كشف جنيه'],...UNITS.map(u=>[u.code,u.building,u.type,u.area,u.price,u.alt??'',u.officialOutstandingEGP??''])],'molak-al-mamsha-units.csv'));
+ $('exportFxAudit').addEventListener('click',()=>{
+    const params=ledgerParams();
+    const rows=[['كود الوحدة','عمارة','نوع','مساحة م²','السعر جنيه','البديل','رصيد كشف جنيه','نسبة التزامات افتراضية','التزامات جنيه','رصيد مسدد مستنتج جنيه','جدية الحجز دولار (فرضية)','سعر جدية الحجز (فرضية)','سعر 22 ديسمبر 2025','دولار تقديري بسعر ديسمبر','سعر 15 أكتوبر 2026 (فرضية)','دولار تقديري بسعر 53','فرق سيناريو الدولار','تحويلات مبلغ بها بالدولار (ليست مثبتة للجميع)','ملاحظة توثيق']];
+    for(const u of UNITS){const m=L.ledgerUsdScenarios(u,params);rows.push([u.code,u.building,u.type,u.area,u.price,u.alt??'',u.officialOutstandingEGP??'',m.available?m.fraction:'',m.available?m.targetEGP:'',m.available?m.creditedEGP:'',m.available?m.bookedUSD:'',m.available?m.bookFX:'',m.available?m.fxDec:'',m.available?m.usdAtDec:'',m.available?m.fxLater:'',m.available?m.usdAtLater:'',m.available?m.scenarioSpreadUSD:'',Array.isArray(u.payments)?u.payments.reduce((sum,a)=>sum+a.usd,0)+(u.studyPaidUSD||0):'',m.available?'استنتاج محاسبي مشروط بأسعار الصرف وليس مدفوعًا موثقًا':'غير متاح']);}
+    csvDownload(rows,'molak-al-mamsha-fx-audit-all-units.csv');
+ });
+
 
  for(const b of document.querySelectorAll('[data-exit-years]'))b.addEventListener('click',()=>{$('exitYears').value=b.dataset.exitYears;calculateAll();});
  for(const radio of document.querySelectorAll('[name="exitMode"]'))radio.addEventListener('change',()=>{exitMode=radio.value;calculateAll();});
@@ -188,7 +214,7 @@
  $('fxLowPreset').addEventListener('click',()=>{years.forEach((y,i)=>fx[y]=Math.max(15,52-2*i));renderAnnualValues();calculateAll();});
  $('fxFlatPreset').addEventListener('click',()=>{years.forEach(y=>fx[y]=52);renderAnnualValues();calculateAll();});
  $('fxHighPreset').addEventListener('click',()=>{years.forEach((y,i)=>fx[y]=52+3*i);renderAnnualValues();calculateAll();});
- $('resetButton').addEventListener('click',()=>{if(!window.confirm('هل تريد إعادة كل المدخلات والسيناريوهات إلى القيم الافتراضية؟'))return;localStorage.removeItem(STORAGE_KEY);for(const [k,v] of Object.entries(inputDefault))$(k).value=v;rates={};fx={};$('paymentReferenceFX').value=53.4134;selected='a4-5';exitMode='after';document.querySelector('input[name="exitMode"][value="after"]').checked=true;$('selectAlt').value=selected;buildYears();calculateAll();});
+ $('resetButton').addEventListener('click',()=>{if(!window.confirm('هل تريد إعادة كل المدخلات والسيناريوهات إلى القيم الافتراضية؟'))return;localStorage.removeItem(STORAGE_KEY);for(const [k,v] of Object.entries(inputDefault))$(k).value=v;rates={};fx={};$('paymentReferenceFX').value=53.4134;$('fxBooking').value=47.5019;$('fxDecember').value=47.4061;$('bookingUSD').value=5000;$('discountTiming').value='upfront';selected='a4-5';exitMode='after';document.querySelector('input[name="exitMode"][value="after"]').checked=true;$('selectAlt').value=selected;buildYears();calculateAll();});
  $('themeButton').addEventListener('click',()=>{document.body.classList.toggle('dark');try{localStorage.setItem(STORAGE_KEY+'-dark',document.body.classList.contains('dark')?'1':'0');}catch(e){}});
  $('exportCompare').addEventListener('click',exportCompare);$('exportSchedule').addEventListener('click',exportSchedule);$('printButton').addEventListener('click',()=>window.print());
  }

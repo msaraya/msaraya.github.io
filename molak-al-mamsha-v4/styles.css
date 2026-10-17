@@ -38,3 +38,11 @@ body.dark .exit-alert{background:#42351e;color:#ffdda6}
 #paymentVerdict{margin:16px 0 0;line-height:2.1}
 @media(max-width:850px){.unit-filters{grid-template-columns:1fr 1fr}.payment-metrics{grid-template-columns:1fr 1fr}}
 @media(max-width:540px){.unit-filters{grid-template-columns:1fr}.payment-metrics{grid-template-columns:1fr 1fr}.payment-metrics .mini-metric b{font-size:14px}}
+
+/* FX sensitivity across all ledger-recorded units */
+.scenario-amount{font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.scenario-breakdown{margin:20px 0;padding:16px;border:1px solid var(--line);border-radius:15px;background:var(--panel)}
+.scenario-breakdown h3{margin:0 0 12px;font-size:16px}
+.scenario-breakdown table{min-width:580px}
+.highlight-cell{font-weight:900;color:var(--accent,#13695e)}
+@media(max-width:720px){#units .table-wrap{overflow:auto}#units table{min-width:1140px}}

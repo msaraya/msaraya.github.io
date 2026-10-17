@@ -3,16 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#102a36">
+  <meta name="theme-color" content="#102a36"><meta name="application-version" content="v4.61b-20261017">
   <meta name="description" content="ملاك الممشى: حاسبة تفاعلية لبدائل سداد وحدات ممشى الحي الثاني D2 بالعاصمة الإدارية، مع سيناريوهات الفائدة والدولار وحساب الخروج.">
   <meta property="og:title" content="ملاك الممشى | حاسبة بدائل السداد">
   <meta property="og:description" content="قارن بين بدائل السداد وتوقعات الفائدة وسعر الدولار، واحسب التكلفة والتوفير بالجنيه المصري.">
   <meta property="og:type" content="website">
   <title>ملاك الممشى | حاسبة بدائل السداد</title>
-  <link rel="stylesheet" href="./styles.css">
-  <script src="./logic.js" defer></script>
-  <script src="./units.js" defer></script>
-  <script src="./app.js" defer></script>
+  <link rel="stylesheet" href="./styles.css?v=61b">
+  <script src="./logic.js?v=61b" defer></script>
+  <script src="./units.js?v=61b" defer></script>
+  <script src="./app.js?v=61b" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -36,13 +36,13 @@
 
 
     <section class="section" id="units">
-      <div class="section-heading"><div><span class="section-kicker">بيانات الوحدات</span><h2>كشف وحدات الممشى</h2><p>٦٢ وحدة: كود الوحدة، المساحة، النوع، السعر، والبديل المسجل إن وُجد. لا نعرض أسماء ملاك.</p></div><div class="action-group"><button class="ghost" id="exportUnits" type="button">↓ تصدير الوحدات CSV</button></div></div>
+      <div class="section-heading"><div><span class="section-kicker">بيانات الوحدات</span><h2>كشف وحدات الممشى</h2><p>٦٢ وحدة في كشف الأسعار، منها ٦١ وحدة لها رصيد وبديل موثقان بالكشف. تقدير الدولار بكل البدائل ١–٤، دون نشر أسماء الملاك.</p></div><div class="action-group"><button class="ghost" id="exportUnits" type="button">↓ تصدير الوحدات CSV</button></div></div>
       <div class="panel"><div class="unit-filters">
         <label class="field">ابحث بكود الوحدة <input id="unitSearch" type="search" placeholder="مثال MLR56G4" autocomplete="off"></label>
         <label class="field">العمارة <select id="buildingFilter"><option value="">كل العمارات</option><option value="41">41</option><option value="56">56</option></select></label>
         <label class="field">النوع <select id="typeFilter"><option value="">الكل</option><option value="محل">محل</option><option value="عيادة">عيادة</option><option value="صيدلية">صيدلية</option></select></label>
-      </div><div class="unit-count" id="unitCount"></div><div class="table-wrap"><table><thead><tr><th>الكود</th><th>النوع</th><th>المساحة م²</th><th>السعر جنيه</th><th>البديل المسجل</th><th>رصيد الكشف جنيه</th><th>فتح الحاسبة</th></tr></thead><tbody id="unitsBody"></tbody></table></div></div>
-      <p class="fine">أرصدة الكشف معروضة بتاريخ المستند، ولا تعني أنها أرصدة محدثة اليوم. يمكن اختيار أي وحدة واحتساب كل البدائل للمقارنة، دون أن يعني ذلك إمكانية تغيير بديلها المسجل.</p>
+      </div><div class="unit-count" id="unitCount"></div><div class="table-wrap"><table><thead><tr><th>الكود</th><th>النوع</th><th>المساحة م²</th><th>السعر جنيه</th><th>البديل المسجل</th><th>رصيد الكشف جنيه</th><th>دولار مفترض بسعر ٢٢ ديسمبر ٢٠٢٥</th><th>دولار مفترض بالسعر المرجعي الثاني (يبدأ ٥٣٫٤١٣٤)</th><th>فتح الحاسبة</th></tr></thead><tbody id="unitsBody"></tbody></table></div></div>
+      <p class="fine">عمودا الدولار يعرضان سيناريوهين باستخدام ٥٬٠٠٠ دولار جدية حجز وسعر شراء مفترض. لا يمكن استنتاج سعر اعتماد الهيئة من الرصيد وحده. أرصدة الكشف معروضة بتاريخ المستند، ولا تعني أنها أرصدة محدثة اليوم. يمكن اختيار أي وحدة واحتساب كل البدائل للمقارنة، دون أن يعني ذلك إمكانية تغيير بديلها المسجل.</p>
     </section>
 
     <section class="section" id="calculator">
@@ -86,13 +86,29 @@
 
 
     <section class="section" id="payments">
-      <div class="section-heading"><div><span class="section-kicker">مطابقة المدفوعات</span><h2>سددت كام دولار؟ وهل فيه فرق زيادة؟</h2><p>يُعرض المبلغ المعروف فقط لو توفرت بياناته. باقي الوحدات يُعرض لها رصيد الكشف والاستنتاج الحسابي، وليس إيصال تحويل.</p></div></div>
+      <div class="section-heading"><div><span class="section-kicker">مطابقة المدفوعات · 61 وحدة</span><h2>تقدير الدولار وفق يوم الصرف</h2><p>الحاسبة تحسب كل البدائل من الرصيد المسجل، وتفصل بين سيناريو ٢٢ ديسمبر ٢٠٢٥ وسعر 53.4134 جنيه في ١٥ أكتوبر ٢٠٢٦. لا يوجد دليل على سعر التحويل الحقيقي لبقية الملاك دون الإيصالات.</p></div><button class="ghost" id="exportFxAudit" type="button">↓ تصدير كل الـ٦١ وحدة CSV</button></div>
       <div class="panel"><div id="paymentSummary" aria-live="polite"></div>
-        <div class="field-grid payment-controls"><label class="field">سعر صرف مرجعي لاختبار استنتاج الدولار (جنيه / $)
-          <input id="paymentReferenceFX" type="number" min="1" max="300" step="0.0001" value="53.4134">
-          <small>افتراض مبدئي من متوسط البنك المركزي في 15 أكتوبر 2026؛ <b>ليس</b> سعر تحويل أي مالك آخر. تغييره يغير الدولارات المستنتجة فقط.</small></label>
-          <label class="field">معادلة الالتزامات الحالية<input value="البديل ٣: ٤٠٫٥٪ | البديل ٤: ٣٨٫٥٪" disabled><small>للرابع: مقدم ١٥٪ + استلام ١٠٪ + صيانة ١٢٪ + رسوم ١٫٥٪. للثالث: ٣٠٪ + صيانة ١٢٪ + رسوم ١٫٥٪ - خصم ٣٪ كاملًا.</small></label></div>
+        <div class="field-grid payment-controls">
+          <label class="field">سعر صرف جدية الحجز المفترض (جنيه / دولار)
+            <input id="fxBooking" type="number" min="1" max="300" step="0.0001" value="47.5019">
+            <small>افتراض موحد لـ ٥٬٠٠٠ دولار جدية حجز. تختلف تواريخها الفعلية من مالك لآخر.</small></label>
+          <label class="field">سعر الدولار المرجعي – ٢٢ ديسمبر ٢٠٢٥
+            <input id="fxDecember" type="number" min="1" max="300" step="0.0001" value="47.4061">
+            <small>سعر الشراء المنشور عن البنك المركزي؛ لا يثبت تاريخ اعتماد الهيئة لكل وحدة.</small></label>
+          <label class="field">سيناريو دولار ٥٣ – ١٥ أكتوبر ٢٠٢٦
+            <input id="paymentReferenceFX" type="number" min="1" max="300" step="0.0001" value="53.4134">
+            <small>سعر شراء مرجعي، وليس سعر يوم تحويل ديسمبر.</small></label>
+          <label class="field">توقيت تطبيق خصم البدائل ١–٣ في كشف المديونية
+            <select id="discountTiming"><option value="upfront">الخصم مطبق بالفعل (الافتراضي)</option><option value="deferred">الخصم لم يُطبّق بعد — محاكاة</option></select>
+            <small>بيانات عماد تدعم فرضية تطبيق الخصم مبكرًا في حالته، ولا تثبت ذلك لكل الوحدات.</small></label>
+          <label class="field">جدية الحجز المفترضة بالدولار
+            <input id="bookingUSD" type="number" min="0" max="200000" step="50" value="5000">
+            <small>القيمة المعتادة في الكراسة، قابلة للتغيير للمحاكاة فقط.</small></label>
+        </div>
+        <p class="fine">النموذج الافتراضي عند تطبيق الخصم: البديل ١ = ١٠٦٫٥٪ من السعر، الثاني = ٥٨٫٥٪، الثالث = ٤٠٫٥٪، الرابع = ٣٨٫٥٪؛ ثم نطرح رصيد الكشف، ونقسم ما بعد جدية الحجز على سعر الصرف المفترض. الخصم يُحسب كاملًا داخل التزامات المرحلة: افتراض محاسبي قابل للمراجعة حسب كشف الهيئة. <b>سعر ٥٣ لا يعني أن بعض الوحدات دُفعت في ذلك اليوم.</b></p>
         <div class="payment-metrics" id="paymentMetrics"></div>
+        <div id="paymentScenarioDetail"></div>
+        <p class="fine">مصادر أسعار الصرف: <a href="https://www.firstbankeg.com/41009" target="_blank" rel="noopener noreferrer">22 ديسمبر 2025 (منقول عن المركزي)</a> · <a href="https://www.cbe.org.eg/ar/" target="_blank" rel="noopener noreferrer">15 أكتوبر 2026 (البنك المركزي)</a>.</p>
         <div id="paymentLines"></div>
         <div class="warning" id="paymentVerdict">لا يمكن إثبات دولار زائد من رصيد الوحدة وحده.</div>
       </div>
