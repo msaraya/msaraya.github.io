@@ -81,3 +81,13 @@ Only two units have reported/documented payments in the accessible material; the
 All CSS and JavaScript references include a `?v=61b` cache-busting query. Files are designed for static hosting inside your existing `molak-al-mamsha-v4` directory.
 
 Users can switch discountTiming between `upfront` and `deferred`: under the deferred hypothesis, 7%, 5%, or 3% is added back to the relevant financial target before USD estimation. This isolates accounting uncertainty; it does not establish the real credit posting.
+
+
+## الإصدار v4.62 — عرض شهري وربع سنوي
+
+- في **جدول السداد بالتفصيل** اختَر «ربع سنوي (رسمي)» أو «شهري (ميزانية تقديرية)».
+- كل دفعة شهرية ظاهرية = ثلث **القسط الربع سنوي المحتسب** (أصل + فائدة + إضافة). التاريخ الشهري يمثل شهر تخصيص الادخار فقط؛ يظل السداد الفعلي لهيئة المجتمعات في تاريخ القسط الربع سنوي.
+- عند تقلب سعر الدولار أو الفائدة في سنة الاستحقاق، تُحدّث القيم في الوضعين تلقائيًا؛ تعتمد معادلة الـUSD الشهرية على سعر **يوم الاستحقاق الرسمي المفترض** وليس سعر شهر الادخار.
+- الجدول الشهري لا يمثل موافقة على تقسيط شهري، ولا يعيد احتساب الفائدة شهريًا، ولا يغيّر إجمالي السداد.
+- تنزيل CSV يحترم وضع العرض الحالي.
+- مثال GitHub Pages: افرد مجلد `molak-al-mamsha-v4` في جذر مستودع المدونة ثم `git add molak-al-mamsha-v4 && git commit -m "Add monthly budgeting view" && git push origin main`.

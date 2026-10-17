@@ -85,6 +85,29 @@
       principalFinanced, totalInterest, totalSurcharge, totalInstallmentsEGP, totalInstallmentsUSD,
       maxQuarter, totalEGP, totalUSD, installments, outstandingEGP:Math.max(0, totalEGP - paidPrincipal(p)-nonnegative(p.paidFeesEGP)-study) };
   }
+  // Budget-only monthly allocation of official quarterly installments: saving 1/3
+  // in each of the three months following the handover / preceding the due date.
+  // No monthly payment is due to NUCA under this illustration; the full quarterly
+  // installment remains payable on its official due date. Annual interest / FX
+  // values are those of the quarter's due date, not monthly forecast values.
+  function monthlyBudget(installments, handoverDate) {
+    const rows=[];
+    const start=handoverDate || '2026-11-01';
+    for (const q of installments) {
+      for(let j=1;j<=3;j++) {
+        const date=addMonths(start,(q.index-1)*3+j);
+        rows.push({
+          index:rows.length+1, date, year:Number(date.slice(0,4)),
+          quarterIndex:q.index,quarterDueDate:q.date, isQuarterDue:j===3,
+          beginning:q.beginning,ending:j===3?q.ending:q.beginning,
+          rate:q.rate, fx:q.fx, principal:q.principal/3, interest:q.interest/3,
+          surcharge:q.surcharge/3, due:q.due/3, dollar:q.dollar/3,
+          officialDue:j===3?q.due:0,
+        });
+      }
+    }
+    return rows;
+  }
   function compare(p) {
     const results=ALTERNATIVES.map(a=>calculate(p,a));
     const official=results.filter(x=>x.official);
@@ -229,5 +252,5 @@
       appliedEGP,paidUSD,appliedFx,targetEGP,impliedCreditedEGP,impliedUSDAtReference,
       differenceEGP,differenceUSD,userAmounts};
   }
-  return {ALTERNATIVES, calculate, compare, exitEstimate, exitProjection, paymentAudit, ledgerUsdScenarios, LEDGER_OBLIGATIONS, addMonths, safeDate, formatMoney, clamp, nonnegative};
+  return {ALTERNATIVES, calculate, monthlyBudget, compare, exitEstimate, exitProjection, paymentAudit, ledgerUsdScenarios, LEDGER_OBLIGATIONS, addMonths, safeDate, formatMoney, clamp, nonnegative};
 });

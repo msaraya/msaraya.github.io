@@ -46,3 +46,14 @@ body.dark .exit-alert{background:#42351e;color:#ffdda6}
 .scenario-breakdown table{min-width:580px}
 .highlight-cell{font-weight:900;color:var(--accent,#13695e)}
 @media(max-width:720px){#units .table-wrap{overflow:auto}#units table{min-width:1140px}}
+
+/* v4.62: official quarterly payments / monthly budgeting toggle */
+.schedule-mode-info{border-radius:12px;padding:13px 17px;margin-bottom:13px;font-size:12px;line-height:1.9;background:var(--accent-soft);border:1px solid var(--line);color:var(--ink)}
+.schedule-mode-info strong{color:var(--accent)}
+.schedule-table tr.monthly-quarter-due{background:var(--accent-soft)}
+.schedule-table .month-due-pill{font-size:10px;font-weight:800;background:#d2efe8;border-radius:30px;color:#126c60;padding:3px 8px;white-space:nowrap}
+.schedule-table .muted-cell{color:var(--muted);font-size:11px}
+#scheduleView{min-width:180px}
+body.dark .schedule-table .month-due-pill{background:#25574e;color:#aeebdc}
+@media(max-width:560px){#scheduleView{min-width:0;width:200px}}
+@media print{.schedule-mode-info{border:1px solid #ccc}}

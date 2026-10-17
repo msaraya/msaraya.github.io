@@ -3,16 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#102a36"><meta name="application-version" content="v4.61b-20261017">
+  <meta name="theme-color" content="#102a36"><meta name="application-version" content="v4.62-20261017">
   <meta name="description" content="ملاك الممشى: حاسبة تفاعلية لبدائل سداد وحدات ممشى الحي الثاني D2 بالعاصمة الإدارية، مع سيناريوهات الفائدة والدولار وحساب الخروج.">
   <meta property="og:title" content="ملاك الممشى | حاسبة بدائل السداد">
   <meta property="og:description" content="قارن بين بدائل السداد وتوقعات الفائدة وسعر الدولار، واحسب التكلفة والتوفير بالجنيه المصري.">
   <meta property="og:type" content="website">
   <title>ملاك الممشى | حاسبة بدائل السداد</title>
-  <link rel="stylesheet" href="./styles.css?v=61b">
-  <script src="./logic.js?v=61b" defer></script>
-  <script src="./units.js?v=61b" defer></script>
-  <script src="./app.js?v=61b" defer></script>
+  <link rel="stylesheet" href="./styles.css?v=62">
+  <script src="./logic.js?v=62" defer></script>
+  <script src="./units.js?v=62" defer></script>
+  <script src="./app.js?v=62" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -28,7 +28,7 @@
         <p class="eyebrow"><span class="live-dot"></span> ممشى الحي الثاني (D2) · R3 · العاصمة الإدارية</p>
         <h1>كل قرار سداد، <em>بالأرقام.</em></h1>
         <p class="hero-description">حاسبة مستقلة لملاك الوحدات التجارية والإدارية والسكنية. جرّب انخفاض الفائدة أو ارتفاعها، غيّر سعر الدولار سنة بسنة، واعرف تكلفة كل بديل والتوفير بالجنيه قبل ما تقرر.</p>
-        <div class="hero-tags"><span>بدائل السداد الأربعة</span><span>فائدة متغيرة سنويًا</span><span>جداول ربع سنوية</span><span>حساب الخروج</span></div>
+        <div class="hero-tags"><span>بدائل السداد الأربعة</span><span>فائدة متغيرة سنويًا</span><span>جداول ربع سنوية وشهرية</span><span>حساب الخروج</span></div>
       </div>
       <aside class="hero-note"><div class="hero-note-top">مرجع سعر الفائدة</div><div class="hero-number">٢٠٪</div><div class="hero-note-sub">فائدة الإقراض لليلة واحدة – قرار ٢٤ سبتمبر ٢٠٢٦</div><a href="https://www.cbe.org.eg/ar/news-publications/news/2026/09/24/15/38/mpc-press-release-24-september-2026" target="_blank" rel="noopener noreferrer">مصدر البنك المركزي ↗</a><hr><p>القيمة المستخدمة نقطة بداية <b>قابلة للتعديل</b>، وليست تعهدًا من الجهة بسعر تمويل ثابت.</p></aside>
     </section>
@@ -127,16 +127,17 @@
     <section class="section" id="comparison">
       <div class="section-heading"><div><span class="section-kicker">03 / مقارنة</span><h2>أي بديل أوفر لك بالجنيه؟</h2><p>التكلفة = قيمة الوحدة بعد الخصم + الرسوم والصيانة + الفوائد والإضافات التقديرية.</p></div><button id="exportCompare" class="ghost" type="button">↓ تنزيل مقارنة CSV</button></div>
       <div class="kpi-grid"><article class="kpi-card"><div class="kpi-label">أوفر بديل رسمي</div><div id="cheapestName" class="kpi-value label-value">—</div><div id="cheapestTotal" class="kpi-foot">—</div></article><article class="kpi-card"><div class="kpi-label">توفير البديل الموصى به مقارنة بالرابع ١٠ سنوات</div><div id="savingsEGP" class="kpi-value">—</div><div class="kpi-foot">جنيه مصري • حساب اسمي غير مخصوم زمنيًا</div></article><article class="kpi-card"><div class="kpi-label">الخصم المباشر في السعر للبديل الموصى به</div><div id="discountEGP" class="kpi-value">—</div><div class="kpi-foot">الجنيه المصري • قبل إضافة التمويل والرسوم</div></article><article class="kpi-card"><div class="kpi-label">مكافئ الدولارات المطلوبة للبديل المختار</div><div id="totalUSD" class="kpi-value">—</div><div class="kpi-foot">تقديري بأسعار الصرف المدخلة سنة بسنة</div></article></div>
-      <div class="panel compare-panel"><div class="table-wrap"><table class="results-table"><thead><tr><th>البديل</th><th>الخصم</th><th>المطلوب الآن</th><th>عند الاستلام</th><th>أكبر قسط ربع سنوي</th><th>فوائد وإضافات</th><th>التكلفة الإجمالية</th><th>التوفير مقارنة بالرابع ١٠ سنوات</th></tr></thead><tbody id="compareBody"></tbody></table></div><div class="legend"><span><i class="bullet green"></i> ضمن الميزانية</span><span><i class="bullet orange"></i> يتجاوز ميزانيتك</span><span><i class="bullet blue"></i> سيناريو افتراضي غير رسمي</span></div></div>
+      <div class="panel compare-panel"><div class="table-wrap"><table class="results-table"><thead><tr><th>البديل</th><th>الخصم</th><th>المطلوب الآن</th><th>عند الاستلام</th><th id="compareMaxHeading">أكبر قسط ربع سنوي</th><th>فوائد وإضافات</th><th>التكلفة الإجمالية</th><th>التوفير مقارنة بالرابع ١٠ سنوات</th></tr></thead><tbody id="compareBody"></tbody></table></div><div class="legend"><span><i class="bullet green"></i> ضمن الميزانية</span><span><i class="bullet orange"></i> يتجاوز ميزانيتك</span><span><i class="bullet blue"></i> سيناريو افتراضي غير رسمي</span></div></div>
       <div id="costChart" class="panel cost-chart" role="img" aria-label="مخطط مقارنة تكلفة البدائل"></div>
       <details class="note-details"><summary>لماذا يتغير مكافئ الدولار ولا تتغير تكلفة الثمن بالجنيه عند تحريك سعر الصرف؟</summary><p>ثمن الوحدة محدد بالجنيه بحسب الكراسة، والتحويل من الخارج بالدولار وفق السعر في تاريخ الاستحقاق. لذلك تختلف الدولارات اللازمة لتحويل قسط بالجنيه عندما يتغير سعر الدولار، لكن أصل القسط بالجنيه نفسه لا يتغير بسبب ذلك وحده. الاستثناءات هنا تشمل احتساب حد خصم الإلغاء الأدنى ٥٠٠ دولار ومصاريف الدراسة بالدولار. المتوسط السنوي المستخدم في الحاسبة تقريب، لا يغني عن سعر يوم الاستحقاق الحقيقي.</p></details>
     </section>
 
     <section class="section" id="schedule">
-      <div class="section-heading"><div><span class="section-kicker">04 / أقساط</span><h2>جدول السداد بالتفصيل</h2><p>كل سطر يمثل قسطًا ربع سنوي، بفائدة سنة الاستحقاق والرصيد قبل السداد.</p></div><div class="action-group"><label class="select-inline">اعرض جدول <select id="selectAlt" aria-label="اختر البديل لعرض جدول الأقساط"></select></label><button class="ghost" id="exportSchedule" type="button">↓ تنزيل الأقساط CSV</button></div></div>
+      <div class="section-heading"><div><span class="section-kicker">04 / أقساط</span><h2>جدول السداد بالتفصيل</h2><p>بدّل بين الأقساط الربع سنوية الرسمية، وتوزيعها شهريًا لتخطيط الميزانية. تتحدث القيم مع تغيّر الفائدة والدولار.</p></div><div class="action-group"><label class="select-inline">اعرض جدول <select id="selectAlt" aria-label="اختر البديل لعرض جدول الأقساط"></select></label><label class="select-inline">طريقة العرض <select id="scheduleView" aria-label="عرض الأقساط ربع سنوي أم ميزانية شهرية"><option value="quarterly">ربع سنوي (رسمي)</option><option value="monthly">شهري (ميزانية تقديرية)</option></select></label><button class="ghost" id="exportSchedule" type="button">↓ تنزيل الجدول CSV</button></div></div>
+      <div class="schedule-mode-info" id="scheduleModeInfo" role="status" aria-live="polite">المبالغ تستحق كل ثلاثة أشهر بحسب كراسة الشروط.</div>
       <div class="schedule-metrics" id="scheduleSummary"></div>
-      <div class="panel"><div class="table-wrap"><table class="schedule-table"><thead><tr><th>القسط</th><th>تاريخ الاستحقاق</th><th>أصل الدين قبل القسط</th><th>سعر الفائدة</th><th>أصل القسط</th><th>فائدة الربع</th><th>إضافة ٢٫٥٪</th><th>الإجمالي جنيه</th><th>الدولار</th><th>الإجمالي $</th><th>المتبقي جنيه</th></tr></thead><tbody id="scheduleBody"></tbody><tfoot id="scheduleFoot"></tfoot></table></div></div>
-      <div class="panel annual-summary"><h3>ملخص الأقساط حسب السنة</h3><div class="table-wrap"><table><thead><tr><th>السنة</th><th>عدد الأقساط</th><th>أصل الدين المسدد</th><th>فوائد</th><th>إضافات</th><th>الإجمالي جنيه</th><th>الإجمالي دولار</th></tr></thead><tbody id="annualBody"></tbody></table></div></div>
+      <div class="panel"><div class="table-wrap"><table class="schedule-table"><thead id="scheduleHead"><tr><th>القسط</th><th>تاريخ الاستحقاق</th><th>أصل الدين قبل القسط</th><th>سعر الفائدة</th><th>أصل القسط</th><th>فائدة الربع</th><th>إضافة ٢٫٥٪</th><th>الإجمالي جنيه</th><th>الدولار</th><th>الإجمالي $</th><th>المتبقي جنيه</th></tr></thead><tbody id="scheduleBody"></tbody><tfoot id="scheduleFoot"></tfoot></table></div></div>
+      <div class="panel annual-summary"><h3>ملخص الأقساط حسب سنة الاستحقاق الرسمي</h3><div class="table-wrap"><table><thead><tr><th>السنة</th><th>عدد الأقساط</th><th>أصل الدين المسدد</th><th>فوائد</th><th>إضافات</th><th>الإجمالي جنيه</th><th>الإجمالي دولار</th></tr></thead><tbody id="annualBody"></tbody></table></div></div>
     </section>
 
     <section class="section" id="exit">
