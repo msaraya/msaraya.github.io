@@ -5,3 +5,36 @@ body.dark{color-scheme:dark;--bg:#101e25;--panel:#172a33;--ink:#dcedee;--muted:#
 @media(max-width:800px){.topbar-inner{height:68px}.navlinks{display:none}.topbar-inner>.small{margin-inline-start:auto}.hero{grid-template-columns:1fr;padding:24px 0}.hero-main{min-height:0;padding:30px 24px}.hero-note{padding:19px;display:grid;grid-template-columns:1fr auto;gap:0 15px}.hero-number{grid-row:1/3;grid-column:2;font-size:42px}.hero-note hr{grid-column:1/3;margin:8px 0}.hero-note p{grid-column:1/3}.hero-note a{grid-column:1}.input-layout,.exit-layout{grid-template-columns:1fr}.section{padding:28px 0 15px}.section-heading{align-items:flex-start;flex-direction:column}.section-heading h2{font-size:24px}.source-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:540px){body{font-size:14px}.shell{width:min(100% - 24px,1280px)}.hero h1{font-size:35px}.hero-main{padding:27px 21px}.hero-tags{gap:5px}.hero-tags span{font-size:9px}.panel{padding:18px}.field-grid,.source-grid,.exit-results-list{grid-template-columns:1fr}.scenario-bar{padding:16px;display:block}.scenario-presets{margin-top:7px}.forecast-head{display:none}.year-row{grid-template-columns:1fr;gap:5px;padding:12px 16px}.year-id{text-align:right;border-bottom:1px solid var(--line);padding-bottom:4px}.year-entry{gap:7px}.year-entry:before{content:'فائدة سنوية';min-width:94px;font-size:10px;color:var(--muted)}.year-entry.fx:before{content:'سعر الدولار'}.year-entry input[type=number]{width:67px;min-width:67px}.year-entry b{min-width:20px}.kpi-grid,.schedule-metrics{grid-template-columns:1fr 1fr;gap:8px}.kpi-card{padding:13px;min-height:108px}.kpi-label{font-size:10px;min-height:40px}.kpi-value{font-size:19px}.label-value{font-size:14px}.kpi-foot{font-size:9px}.chart-row{grid-template-columns:100px 1fr 97px;gap:7px}.chart-label,.chart-value{font-size:9px}.schedule-metrics .mini-metric{padding:12px}.mini-metric b{font-size:15px}.footer-inner{flex-direction:column;justify-content:center;gap:4px;padding:15px 0}.select-inline{flex-wrap:wrap}.select-inline select{min-width:0;width:200px}.hero-note{display:block}.hero-number{line-height:1.15}}
 @media print{.topbar,.navlinks,.action-group,.ghost,.soft,.footer-action,.scenario-presets,.warning.prominent{display:none!important}body{background:#fff;font-size:11px}.shell{width:100%;max-width:100%}.hero{display:block}.hero-main{padding:15px;background:#fff;color:#111;min-height:0}.hero-main h1{color:#111}.hero h1 em{color:#333}.hero-description,.eyebrow{color:#333}.hero-note{display:none}.section{break-inside:auto;padding-top:8px}.panel,.kpi-card{box-shadow:none;break-inside:avoid}.table-wrap{overflow:visible}table{white-space:normal}td,th{padding:5px;font-size:8px}.year-rows{display:none}.source-grid{grid-template-columns:repeat(3,1fr)}}
+
+/* v3: source unit picker + year-based exit calculator */
+.unit-chooser{background:#eaf5f4;border:1px solid #d0e4e1;border-radius:13px;padding:15px 16px;margin:12px 0 20px}
+.unit-chooser .field{display:flex;flex-direction:column;gap:7px}
+.unit-chooser select{width:100%;height:49px;font-weight:700;font-size:13px;padding:0 12px;border-radius:9px;border:1px solid #92bdb9;background:white;color:#174c50;max-width:100%}
+.unit-selected{background:white;border:1px dashed #abc8c3;border-radius:10px;margin-top:11px;padding:12px;color:#28676a;font-size:12px;line-height:1.9}
+.exit-year-block{background:var(--accent-soft);border:1px solid #b2dad6;border-radius:12px;padding:16px 16px 12px;margin:15px 0}
+.exit-year-block label{display:block;font-size:13px;font-weight:750;margin-bottom:10px}
+.exit-year-block input[type=range]{display:block;width:100%;cursor:pointer;accent-color:var(--accent);margin:8px 0 5px}
+.exit-year-row{display:flex;justify-content:space-between;color:var(--muted);font-size:10px}
+.exit-quick{display:flex;flex-wrap:wrap;gap:6px;margin-top:13px}
+.exit-quick button{padding:5px 9px;font-size:11px;font-weight:750;border:1px solid #afd2cc;background:white;color:#23736e;border-radius:7px;cursor:pointer}
+.exit-quick button.active{background:#16695f;color:white;border-color:#16695f}
+.exit-alert{font-size:12px;line-height:1.9;border:1px solid #e6d3ac;border-radius:10px;background:#fff8e9;padding:12px 13px;margin:14px 0;color:#735520}
+body.dark .unit-chooser,body.dark .exit-year-block{background:#21413f;border-color:#335d59}
+body.dark .unit-selected,body.dark .unit-chooser select,body.dark .exit-quick button{background:#1b343a;color:#c2e9e3;border-color:#3b6965}
+body.dark .exit-quick button.active{background:#09665e}
+body.dark .exit-alert{background:#42351e;color:#ffdda6}
+@media(max-width:540px){.unit-chooser{padding:12px}.exit-quick button{flex:1;min-width:65px}.exit-stat b{font-size:16px}}
+/* Unit catalogue and transparent historical-payment reconciliation */
+.unit-filters{display:grid;grid-template-columns:1.7fr 1fr 1fr;gap:14px;margin-bottom:17px}
+.unit-count{font-size:12px;color:var(--muted);padding:7px 0 14px;font-weight:700}
+.unit-filters input[type=search]{direction:ltr;text-align:right}
+.open-unit{white-space:nowrap}
+.muted-note{font-size:12px;color:var(--muted);line-height:2;margin:9px 0 16px}
+.payment-controls{margin:17px 0 19px}
+.payment-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:15px}
+.payment-metrics .mini-metric b{font-size:17px;overflow-wrap:anywhere}
+.payment-lines-title{font-weight:800;margin:15px 0 10px;font-size:13px}
+#paymentLines td{white-space:normal;font-size:11px;min-width:90px}
+#paymentVerdict{margin:16px 0 0;line-height:2.1}
+@media(max-width:850px){.unit-filters{grid-template-columns:1fr 1fr}.payment-metrics{grid-template-columns:1fr 1fr}}
+@media(max-width:540px){.unit-filters{grid-template-columns:1fr}.payment-metrics{grid-template-columns:1fr 1fr}.payment-metrics .mini-metric b{font-size:14px}}

@@ -9,6 +9,8 @@ A standalone, responsive, privacy-first Arabic calculator for owners of the **D2
 - Interactive annual lending-rate and EGP/USD assumptions, *either up or down*, with presets and direct numeric edits. Quarter due date determines which annual assumption applies.
 - Equal quarterly principal installments with variable interest calculated on opening outstanding balance; 2.5% extra charges isolated with explicit alternative assumptions.
 - 12% commercial/administrative or 10% residential maintenance on **undiscounted** price; 1.5% administrative & board fees also on undiscounted price.
+- Catalogue of **62 units** with unit code, area, type, price; **61 recorded payment alternatives** and their imported ledger balances (no owner names).
+- A dedicated payments reconciliation panel with known USD transfers for two units, reference historical FX rates, inferred credited EGP and differences transparently marked as hypotheses.
 - Dashboard comparing nominal EGP total costs and savings and estimated USD transfers. Recommend least expensive **formally available** alternative subject to configurable upfront, handover, and quarter budgets.
 - **عقار إكزيت** section distinguishing *not accepting handover*, *requesting cancellation before handover*, and *cancelling after handover*, including the booklet's 1.5% / minimum USD 500 deduction and 7% occupancy rule. Refund numbers **provisional** only.
 - CSV downloads, print, browser-local preferences, light/dark mode.
@@ -24,7 +26,7 @@ The website has relative CSS and JS URLs, so this works as a standalone static H
 ```
 # From within your existing blog repository
 mkdir -p molak-al-mamsha
-cp -a /path/to/downloaded/molak-al-mamsha/{index.html,styles.css,logic.js,app.js} molak-al-mamsha/
+cp -a /path/to/downloaded/molak-al-mamsha/{index.html,styles.css,logic.js,units.js,app.js} molak-al-mamsha/
 git add molak-al-mamsha/
 git commit -m "Add Molak Al Mamsha interactive installment calculator"
 git push origin HEAD
@@ -47,3 +49,13 @@ The current lending-rate starting point (20%) references the CBE press release d
 Cancellation at the purchaser's request and non-acceptance of handover are distinct. The 1.5% deduction (minimum USD 500) is in the booklet, and 7% annual occupancy applies after taking possession. The accounting treatment of already-paid administrative fees, maintenance deposits, refunds, USD conversion and dates must be confirmed by the authority. No automatic 1.5% deduction is stated for simply not collecting keys on a particular day.
 
 No data is transmitted from the application: there are no analytics, external fonts, API calls or third-party scripts. Local storage remains exclusively in the visitor's browser.
+
+## Unit data, privacy and the meaning of "extra dollars"
+
+The static `units.js` includes 62 unit codes, floor, type, areas and undiscounted unit prices; 61 have payment-choice and balance entries from the supplied spreadsheets. The correction `MLR56GB` → `MLR56G8` is based on the code matching the underlying list. It carries **no owner names, email addresses or phone numbers**.
+
+Only two units have user-provided payment histories included: `MLR56G4` and `MLC56M1`. Other buyers' true USD transfers and receipt dates are unknown; the site **never silently treats inferred USD as proven payments**. Historical rates on those two histories are *reference rates* from earlier comparisons, not bank-certified posting rates. `MLR56G4` was said to have transferred USD 24,285 plus USD 5,000, while the portal breakdown referenced USD 24,277.44: the USD 7.56 difference is unallocated and **not** automatically classified as extra purchase principal. `MLC56M1` has USD 5,050 (including USD 50 study) and USD 20,006; the requested December 21, 2025 payment references December 22 working-day FX.
+
+The site applies a **hypothesis** to imported ledger balances for alternatives 3 and 4 only: alternative 3 total 40.5% of undiscounted price (30% +12% maintenance +1.5% fees −3% discount), alternative 4 total 38.5% (15% +10% +12% +1.5%). An implied credited-EGP amount is calculated as obligation minus the balance. A reference FX converts this amount into hypothetical USD. This is a reverse calculation, **not** proof of a particular amount transferred. Enter receipt-backed payments in the inputs before attempting a reconciliation. Positive or negative differences alone are not statements of overpayment, tax, credit or right to a refund.
+
+The year-based **عقار إكزيت** simulator compares cancellation before possession and 0–10 years after actual/assumed possession, on an assumed on-time payment schedule and a 7% yearly occupancy charge; maintenance refund, delays, unsettled dues and official reconciliation are unknown.

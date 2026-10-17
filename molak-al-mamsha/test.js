@@ -35,3 +35,36 @@ assert.equal(ex.refundable,250000-137550);
 const exPaid=exitEstimate({...defaults,paidFeesEGP:137550},'before','2026-10-17');assert.equal(exPaid.refundable,250000); // don't deduct already-paid fees twice
 const exAfter=exitEstimate({...defaults,actualHandoverDate:'2026-04-17'},'after','2026-10-17');assert.ok(exAfter.occupancy>0);
 console.log('All 24+ calculation invariants passed');
+// Source-unit audit validations: no owner names, and no "overpaid" conclusion without receipts.
+const fs=require('node:fs');
+const vm=require('node:vm');
+const src=fs.readFileSync(require('node:path').join(__dirname,'units.js'),'utf8');
+const fake={window:{}};vm.runInNewContext(src,fake);
+const UNITS=fake.window.MamshaUnits;
+assert.equal(UNITS.length,62);
+assert.equal(UNITS.filter(u=>u.alt).length,61);
+assert.equal(UNITS.filter(u=>u.type==='عيادة').length,40);
+assert.equal(UNITS.filter(u=>u.type==='محل').length,21);
+assert.equal(UNITS.filter(u=>u.type==='صيدلية').length,1);
+assert.ok(UNITS.every(u=>!Object.keys(u).some(k=>/owner|name|person|phone|email/i.test(k))));
+assert.equal(UNITS.find(u=>u.code==='MLR56G8').price,6084000);
+const {paymentAudit,exitProjection}=require('./logic.js');
+const emad=UNITS.find(u=>u.code==='MLC56M1');
+const ea=paymentAudit(emad,53.4134);
+assert.equal(ea.targetEGP,1571805);
+assert.ok(Math.abs(ea.differenceEGP+71.2134)<.03);
+assert.ok(Math.abs(ea.sentUSD-25056)<.01);
+assert.equal(ea.studyUSD,50);
+const own=UNITS.find(u=>u.code==='MLR56G4');
+const oa=paymentAudit(own,53.4134);
+assert.equal(oa.sentUSD,29285);
+assert.ok(Math.abs(oa.unpostedUSD-7.56)<.00001);
+assert.ok(oa.differenceEGP<0); // no evidence that "extra dollars" are refundable
+const unknown=UNITS.find(u=>u.code==='MLC56M7');
+const ua=paymentAudit(unknown,53.4134);
+assert.equal(ua.differenceEGP,null);
+const calc=exitProjection(defaults,'after',2,'a4-5','2026-10-17');
+assert.equal(calc.installmentCount,8);
+assert.ok(calc.occupancy>0);
+assert.ok(calc.refundLow<=calc.refundHigh);
+console.log('Unit catalogue, FX payment audit and multi-year exit tests passed');

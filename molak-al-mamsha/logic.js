@@ -116,5 +116,83 @@
       // This is NOT a statutory refund determination. Fees may be treated differently by NUCA.
       indicativeLost:legalPenalty+occupancy+study};
   }
-  return {ALTERNATIVES, calculate, compare, exitEstimate, addMonths, safeDate, formatMoney, clamp, nonnegative};
+  // Forward-looking cancellation scenarios. Not an authoritative refund determination.
+  // Period is measured in FULL years from handover. It assumes all scheduled sums due
+  // before exit have been paid on time; no late penalties, rent, or market appreciation.
+  function exitProjection(p, mode, yearsRequested, altId, dateToday) {
+    const years = Math.round(clamp(Number(yearsRequested)||0,0,10));
+    const alt = ALTERNATIVES.find(a => a.id === altId) || ALTERNATIVES[3];
+    const handoverDate = p.actualHandoverDate || p.deliveryDate || dateToday || '2026-11-01';
+    const exitDate = mode === 'after' ? addMonths(handoverDate, years*12) : (dateToday || handoverDate);
+    // Real future quarter due dates should be anchored to actual handover if supplied.
+    const schedule = calculate({...p, deliveryDate:handoverDate}, alt);
+    const installments = mode === 'after' ? schedule.installments.filter(inst => inst.date <= exitDate) : [];
+    const paidInstallmentPrincipal = installments.reduce((a,b)=>a+b.principal,0);
+    const paidInstallmentInterest = installments.reduce((a,b)=>a+b.interest,0);
+    const paidInstallmentExtras = installments.reduce((a,b)=>a+b.surcharge,0);
+    const paidInstallments = installments.reduce((a,b)=>a+b.due,0);
+    const principalPaid = mode === 'after'
+      ? schedule.paidPrincipal + schedule.bookingPrincipal + schedule.deliveryPrincipal + paidInstallmentPrincipal
+      : schedule.paidPrincipal;
+    const feesPaid = mode === 'after' ? schedule.fees : Math.min(schedule.fees,nonnegative(p.paidFeesEGP));
+    const maintenancePaid = mode === 'after' ? schedule.maintenance : 0;
+    const study = nonnegative(p.studyFeeUSD??50)*nonnegative(p.historicalFX);
+    const cashPaid = principalPaid + feesPaid + maintenancePaid + study + paidInstallmentInterest + paidInstallmentExtras;
+    const futureFx = mode === 'after'
+      ? getYearValue(p.fx,Number(exitDate.slice(0,4)), nonnegative(p.spotFX)||52)
+      : nonnegative(p.spotFX)||52;
+    const penalty = Math.max(schedule.fees,500*futureFx);
+    const occupancy = mode === 'after' ? nonnegative(p.price)*.07*years : 0;
+    const penaltyUncredited = penalty + occupancy;
+    // Actual authority accounting may or may not set already-paid administrative fees against cancellation deduction.
+    const penaltyCredited = Math.max(0,penalty-feesPaid)+occupancy;
+    const refundLow = Math.max(0,principalPaid-penaltyUncredited);
+    const refundHigh = Math.max(0,principalPaid-penaltyCredited);
+    const excessDeductions = Math.max(0,penaltyUncredited-principalPaid);
+    const remainingPrincipal = Math.max(0, schedule.principalFinanced-paidInstallmentPrincipal);
+    return {mode,years,altId:alt.id,altName:alt.title,handoverDate,exitDate,futureFx,
+      installmentCount:installments.length,paidInstallmentPrincipal,paidInstallmentInterest,
+      paidInstallmentExtras,paidInstallments,principalPaid,feesPaid,maintenancePaid,study,
+      cashPaid,penalty,occupancy,penaltyUncredited,penaltyCredited,refundLow,refundHigh,
+      remainingPrincipal,excessDeductions,lossLow:Math.max(0,cashPaid-refundHigh),
+      lossHigh:Math.max(0,cashPaid-refundLow),noticeDeadline:p.noticeDate?addMonths(p.noticeDate,1):null};
+  }
+  // Audit crosswalk: a displayed outstanding balance is NOT itself evidence of how much USD was sent.
+  // For D2/R3 alternatives 3 and 4 only, infer credited EGP using a *stated*, adjustable
+  // financial-obligations hypothesis and the ledger balance. The 3% discount for
+  // alternative 3 is subtracted in full from the initial gross-priced obligations.
+  function paymentAudit(unit, referenceFx, override = null) {
+    const hasLedger = Number.isFinite(unit?.officialOutstandingEGP);
+    const alt = Number(unit?.alt);
+    const obligationsFraction = alt === 3 ? .30 + .12 + .015 - .03
+                              : alt === 4 ? .15 + .10 + .12 + .015
+                              : null;
+    const rate = Math.max(.01, nonnegative(referenceFx) || 53.4134);
+    const known = Array.isArray(unit?.payments) && unit.payments.length > 0;
+    const paid = known ? unit.payments.reduce((s,p)=>s+nonnegative(p.postedUSD??p.usd),0) : 0;
+    const sent = known ? unit.payments.reduce((s,p)=>s+nonnegative(p.usd),0)+nonnegative(unit.studyPaidUSD) : 0;
+    const credit = known ? unit.payments.reduce((s,p)=>s+nonnegative(p.postedUSD??p.usd)*nonnegative(p.fx),0) : 0;
+    const weightedFx = paid > 0 ? credit/paid : rate;
+    const studyUSD = nonnegative(unit?.studyPaidUSD);
+    const unpostedUSD = known ? Math.max(0,sent-studyUSD-paid) : 0;
+    const userAmounts = override && override.hasAmounts === true;
+    const appliedEGP = userAmounts
+      ? nonnegative(override.principalUSD)*nonnegative(override.historicalFX)
+        +nonnegative(override.paidEGP)+nonnegative(override.paidFeesEGP)
+      : (known ? credit : null);
+    const paidUSD = userAmounts ? nonnegative(override.principalUSD)
+          + (nonnegative(override.paidFeesEGP)/Math.max(.01,nonnegative(override.historicalFX)))
+          : (known ? paid : null);
+    const appliedFx = userAmounts ? nonnegative(override.historicalFX) : weightedFx;
+    const targetEGP = hasLedger && obligationsFraction !== null ? unit.price * obligationsFraction : null;
+    const impliedCreditedEGP = targetEGP === null ? null : targetEGP - unit.officialOutstandingEGP;
+    const impliedUSDAtReference = impliedCreditedEGP===null ? null : impliedCreditedEGP/rate;
+    const differenceEGP = appliedEGP===null || impliedCreditedEGP===null ? null : appliedEGP-impliedCreditedEGP;
+    const differenceUSD = differenceEGP===null ? null : differenceEGP/Math.max(.01,appliedFx);
+    return {code:unit?.code||'',alt,hasLedger,obligationsFraction,referenceFx:rate,known,
+      sentUSD:sent,postedUSD:paid,studyUSD,unpostedUSD,knownAppliedEGP:credit,weightedFx,
+      appliedEGP,paidUSD,appliedFx,targetEGP,impliedCreditedEGP,impliedUSDAtReference,
+      differenceEGP,differenceUSD,userAmounts};
+  }
+  return {ALTERNATIVES, calculate, compare, exitEstimate, exitProjection, paymentAudit, addMonths, safeDate, formatMoney, clamp, nonnegative};
 });
